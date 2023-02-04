@@ -2,16 +2,26 @@
   <div id="info">
     <the-header page="1"></the-header>
     <main>
-      <form @keyup="saveLocal" id="form">
+      <form @input="saveData" @submit.prevent="next" id="form">
         <div id="fullName">
           <div class="Input">
             <label for="name">სახელი</label>
-            <input type="text" name="name" placeholder="ანზორ" />
+            <input
+              type="text"
+              name="name"
+              placeholder="ანზორ"
+              @focusout="Validation"
+            />
             <span>მინიმუმ 2 ასო, ქართული ასოები</span>
           </div>
           <div class="Input">
             <label for="surname">გვარი</label>
-            <input type="text" name="surname" placeholder="მუმლაძე" />
+            <input
+              type="text"
+              name="surname"
+              placeholder="მუმლაძე"
+              @focusout="Validation"
+            />
             <span>მინიმუმ 2 ასო, ქართული ასოები</span>
           </div>
         </div>
@@ -20,7 +30,12 @@
           <label for="image">პირადი ფოტოს ატვირთვა</label>
           <div id="photo">
             ატვირთვა
-            <input type="file" name="image" accept="image/png, image/jpeg" />
+            <input
+              type="file"
+              name="image"
+              accept="image/png, image/jpeg"
+              @change="Validation"
+            />
           </div>
         </div>
 
@@ -38,21 +53,27 @@
             type="text"
             name="email"
             placeholder="anzorr666@redberry.ge"
+            @focusout="Validation"
           />
           <span>უნდა მთავრდებოდეს @redberry.ge-ით</span>
         </div>
 
         <div class="Input">
           <label for="phone_number">მობილურის ნომერი</label>
-          <input type="text" name="phone_number" placeholder="+995 551 12 34 56" />
+          <input
+            type="text"
+            name="phone_number"
+            placeholder="+995 551 12 34 56"
+            @focusout="Validation"
+          />
           <span>უნდა აკმაყოფილებდეს ქართული მობილურის ნომრის ფორმატს</span>
         </div>
 
-        <router-link to="/Experience">შემდეგი</router-link>
+        <button>შემდეგი</button>
       </form>
     </main>
   </div>
-  <resume-component></resume-component>
+  <resume-component :info="formData"></resume-component>
 </template>
 
 <script>
@@ -60,15 +81,88 @@ export default {
   data() {
     return {
       formData: {},
+      validated: {
+        name: false,
+        surname: false,
+        image: false,
+        email: false,
+        phone_number: false,
+      },
     };
   },
+
   methods: {
-    saveLocal() {
-      this.formData = new FormData(document.getElementById("form"));
-      for (const [key, value] of this.formData) {
-        console.log(`${key}: ${value}\n`);
+    Validation(event) {
+      let name = event.target.name;
+      let value = event.target.value;
+      switch (name) {
+        case "name":
+        case "surname":
+          if (/^[ა-ჰ]+[ა-ჰ]$/g.test(value)) {
+            event.target.previousSibling.classList.add("success");
+            event.target.previousSibling.classList.remove("failed");
+            this.validated[name] = true;
+          } else {
+            event.target.previousSibling.classList.add("failed");
+            event.target.previousSibling.classList.remove("success");
+            this.validated[name] = false;
+          }
+          break;
+        case "image":
+          this.validated[name] = true;
+          break;
+        case "email":
+          if (/@redberry.ge$/g.test(value) && /^[a-z]/i.test(value)) {
+            event.target.previousSibling.classList.add("success");
+            event.target.previousSibling.classList.remove("failed");
+            this.validated[name] = true;
+          } else {
+            event.target.previousSibling.classList.add("failed");
+            event.target.previousSibling.classList.remove("success");
+            this.validated[name] = false;
+          }
+          break;
+        case "phone_number":
+          value = value.replaceAll(" ", "");
+          if (/^\+9955\d{8}/gm.test(value) && value.length == 13) {
+            event.target.previousSibling.classList.add("success");
+            event.target.previousSibling.classList.remove("failed");
+            this.validated[name] = true;
+          } else {
+            event.target.previousSibling.classList.add("failed");
+            event.target.previousSibling.classList.remove("success");
+            this.validated[name] = false;
+          }
+          break;
       }
+      localStorage.setItem("validated", JSON.stringify(this.validated));
     },
+    saveData() {
+      this.formData = new FormData(document.getElementById("form"));
+    },
+    next() {
+      for (let i in this.validated) {
+        if (!this.validated[i]) {
+          return;
+        }
+      }
+      this.$router.replace({ path: "/experience" });
+    },
+  },
+
+  mounted() {
+    if (localStorage.data) {
+      this.info = JSON.parse(localStorage.data);
+      for (let i in this.info) {
+        if (i !== "image") {
+          document.getElementsByName(i)[0].value = this.info[i];
+        }
+      }
+    }
+    if (localStorage.validated) {
+      this.validated = JSON.parse(localStorage.getItem("validated"));
+    }
+    this.saveData();
   },
 };
 </script>
@@ -91,11 +185,12 @@ form {
 #fullName {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 3rem;
 }
 
 .Input {
   display: flex;
+  position: relative;
   flex-direction: column;
   width: 100%;
 }
@@ -153,13 +248,56 @@ textarea {
   border: 2px solid var(--lightblack);
 }
 
-a {
-  background-color: #6b40e3;
+button {
+  background-color: var(--buttoncolor);
   color: white;
-  border-radius: 0.5rem;
+  border: none;
+  border-radius: 4px;
   padding: 0.8rem 2.2rem;
   margin-top: 6rem;
   align-self: flex-end;
-  text-decoration: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: var(--buttonhover);
+}
+
+button:focus {
+  background-color: var(--buttonclicked);
+}
+
+.success {
+  color: var(--offblack);
+}
+
+.success + input {
+  border-color: var(--successgreen);
+}
+
+.success::after {
+  position: absolute;
+  content: url("../assets/images/checked.png");
+  width: fit-content;
+  height: fit-content;
+  right: -25px;
+  top: 40%;
+}
+
+.failed {
+  color: var(--failedred);
+}
+
+.failed + input {
+  border-color: var(--failedred);
+}
+
+.failed::after {
+  position: absolute;
+  content: url("../assets/images/warning.png");
+  width: fit-content;
+  height: fit-content;
+  right: 5px;
+  top: 40%;
 }
 </style>

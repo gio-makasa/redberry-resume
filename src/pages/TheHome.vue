@@ -1,6 +1,6 @@
 <template>
   <main>
-    <img src="../assets/Home/redberry.png" alt="redberry" />
+    <img src="../assets/images/redberry.png" alt="redberry" />
     <hr />
     <router-link to="/PersonalInfo">რეზიუმეს დამატება</router-link>
   </main>
@@ -8,7 +8,7 @@
 
 <style scoped>
 main {
-  background-image: url("../assets/Home/background.png");
+  background-image: url("../assets/images/background.png");
   background-size: cover;
   height: 100vh;
   padding: 2rem 4rem;
@@ -29,7 +29,7 @@ a {
 
 a::after {
   position: absolute;
-  content: url('../assets/Home/circleLOGO.png');
+  content: url('../assets/images/circleLOGO.png');
   top: -3rem;
   left: 12rem;
   pointer-events: none;
