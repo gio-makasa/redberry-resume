@@ -14,6 +14,9 @@ export default {};
 
 :root{
   --offblack: #1A1A1A;
+  --lightblack: #BCBCBC;
+  --whiteback: #F9F9F9;
+  --titlecolor: #F93B1D;
 }
 
 * {
@@ -21,11 +24,6 @@ export default {};
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-}
-
-body {
-  padding: 2rem 4rem;
-  overflow: hidden;
 }
 
 hr {

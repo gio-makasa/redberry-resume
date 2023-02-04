@@ -11,6 +11,7 @@ main {
   background-image: url("../assets/Home/background.png");
   background-size: cover;
   height: 100vh;
+  padding: 2rem 4rem;
 }
 
 a {
@@ -31,5 +32,6 @@ a::after {
   content: url('../assets/Home/circleLOGO.png');
   top: -3rem;
   left: 12rem;
+  pointer-events: none;
 }
 </style>
