@@ -2,7 +2,7 @@
   <div id="info">
     <the-header page="1"></the-header>
     <main>
-      <form @input="saveData" @submit.prevent="next" id="form">
+      <form @submit.prevent="next" id="form">
         <div id="fullName">
           <div class="Input">
             <label for="name">სახელი</label>
@@ -10,7 +10,7 @@
               type="text"
               name="name"
               placeholder="ანზორ"
-              @focusout="Validation"
+              @input="Validation($event.target)"
             />
             <span>მინიმუმ 2 ასო, ქართული ასოები</span>
           </div>
@@ -20,7 +20,7 @@
               type="text"
               name="surname"
               placeholder="მუმლაძე"
-              @focusout="Validation"
+              @input="Validation($event.target)"
             />
             <span>მინიმუმ 2 ასო, ქართული ასოები</span>
           </div>
@@ -34,7 +34,7 @@
               type="file"
               name="image"
               accept="image/png, image/jpeg"
-              @change="Validation"
+              @input="Validation($event.target)"
             />
           </div>
         </div>
@@ -44,6 +44,7 @@
           <textarea
             name="about_me"
             placeholder="ზოგადი ინფო შენ შესახებ"
+            @input="saveData"
           ></textarea>
         </div>
 
@@ -53,7 +54,7 @@
             type="text"
             name="email"
             placeholder="anzorr666@redberry.ge"
-            @focusout="Validation"
+            @input="Validation($event.target)"
           />
           <span>უნდა მთავრდებოდეს @redberry.ge-ით</span>
         </div>
@@ -64,7 +65,7 @@
             type="text"
             name="phone_number"
             placeholder="+995 551 12 34 56"
-            @focusout="Validation"
+            @input="Validation($event.target)"
           />
           <span>უნდა აკმაყოფილებდეს ქართული მობილურის ნომრის ფორმატს</span>
         </div>
@@ -73,7 +74,7 @@
       </form>
     </main>
   </div>
-  <resume-component :info="formData"></resume-component>
+  <resume-component :personInfo="formData"></resume-component>
 </template>
 
 <script>
@@ -93,49 +94,57 @@ export default {
 
   methods: {
     Validation(event) {
-      let name = event.target.name;
-      let value = event.target.value;
+      let name = event.name;
+      let value = event.value;
       switch (name) {
         case "name":
         case "surname":
           if (/^[ა-ჰ]+[ა-ჰ]$/g.test(value)) {
-            event.target.previousSibling.classList.add("success");
-            event.target.previousSibling.classList.remove("failed");
+            event.previousSibling.classList.add("success");
+            event.previousSibling.classList.remove("failed");
             this.validated[name] = true;
           } else {
-            event.target.previousSibling.classList.add("failed");
-            event.target.previousSibling.classList.remove("success");
+            event.previousSibling.classList.add("failed");
+            event.previousSibling.classList.remove("success");
             this.validated[name] = false;
           }
           break;
         case "image":
-          this.validated[name] = true;
+          if (value == "") {
+            event.parentElement.classList.add("failed");
+            event.parentElement.classList.remove("success");
+          } else {
+            event.parentElement.classList.add("success");
+            event.parentElement.classList.remove("failed");
+            this.validated[name] = true;
+          }
           break;
         case "email":
           if (/@redberry.ge$/g.test(value) && /^[a-z]/i.test(value)) {
-            event.target.previousSibling.classList.add("success");
-            event.target.previousSibling.classList.remove("failed");
+            event.previousSibling.classList.add("success");
+            event.previousSibling.classList.remove("failed");
             this.validated[name] = true;
           } else {
-            event.target.previousSibling.classList.add("failed");
-            event.target.previousSibling.classList.remove("success");
+            event.previousSibling.classList.add("failed");
+            event.previousSibling.classList.remove("success");
             this.validated[name] = false;
           }
           break;
         case "phone_number":
           value = value.replaceAll(" ", "");
           if (/^\+9955\d{8}/gm.test(value) && value.length == 13) {
-            event.target.previousSibling.classList.add("success");
-            event.target.previousSibling.classList.remove("failed");
+            event.previousSibling.classList.add("success");
+            event.previousSibling.classList.remove("failed");
             this.validated[name] = true;
           } else {
-            event.target.previousSibling.classList.add("failed");
-            event.target.previousSibling.classList.remove("success");
+            event.previousSibling.classList.add("failed");
+            event.previousSibling.classList.remove("success");
             this.validated[name] = false;
           }
           break;
       }
       localStorage.setItem("validated", JSON.stringify(this.validated));
+      this.saveData();
     },
     saveData() {
       this.formData = new FormData(document.getElementById("form"));
@@ -143,6 +152,7 @@ export default {
     next() {
       for (let i in this.validated) {
         if (!this.validated[i]) {
+          this.Validation(document.getElementsByName(i)[0]);
           return;
         }
       }
@@ -151,18 +161,18 @@ export default {
   },
 
   mounted() {
-    if (localStorage.data) {
-      this.info = JSON.parse(localStorage.data);
-      for (let i in this.info) {
+    if (localStorage.personalData) {
+      let personalData = JSON.parse(localStorage.personalData);
+      for (let i in personalData) {
         if (i !== "image") {
-          document.getElementsByName(i)[0].value = this.info[i];
+          document.getElementsByName(i)[0].value = personalData[i];
         }
       }
     }
     if (localStorage.validated) {
       this.validated = JSON.parse(localStorage.getItem("validated"));
+      this.validated["image"] = false;
     }
-    this.saveData();
   },
 };
 </script>
@@ -212,8 +222,11 @@ span {
 }
 
 #personPhoto {
+  position: relative;
   display: flex;
   align-items: center;
+  width: fit-content;
+  padding-right: 50px;
   gap: 1rem;
 }
 
@@ -221,7 +234,6 @@ span {
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
   padding: 0.5rem 1.8rem;
   background-color: #0e80bf;
   color: white;
@@ -299,5 +311,10 @@ button:focus {
   height: fit-content;
   right: 5px;
   top: 40%;
+}
+
+.success[id="photo"]::after,
+.failed[id="photo"]::after{
+  top: 15%;
 }
 </style>

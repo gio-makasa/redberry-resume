@@ -6,6 +6,14 @@
   </main>
 </template>
 
+<script>
+export default {
+  mounted() {
+    localStorage.clear();
+  },
+};
+</script>
+
 <style scoped>
 main {
   background-image: url("../assets/images/background.png");
@@ -29,7 +37,7 @@ a {
 
 a::after {
   position: absolute;
-  content: url('../assets/images/circleLOGO.png');
+  content: url("../assets/images/circleLOGO.png");
   top: -3rem;
   left: 12rem;
   pointer-events: none;
