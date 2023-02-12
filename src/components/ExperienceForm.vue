@@ -115,7 +115,7 @@ export default {
     },
   },
 
-  mounted() {
+  beforeCreate() {
     if (this.validatedExperience) {
       this.validatedExperienceObj = this.validatedExperience;
     }
@@ -186,11 +186,13 @@ hr {
   color: var(--offblack);
 }
 
+.success + textarea,
 .success + input {
   border-color: var(--successgreen);
 }
 
-.success::after {
+.success[for|="position"]::after,
+.success[for|="employer"]::after {
   position: absolute;
   content: url("../assets/images/checked.png");
   width: fit-content;
@@ -203,11 +205,13 @@ hr {
   color: var(--failedred);
 }
 
+.failed + textarea,
 .failed + input {
   border-color: var(--failedred);
 }
 
-.failed::after {
+.failed[for|="position"]::after,
+.failed[for|="employer"]::after {
   position: absolute;
   content: url("../assets/images/warning.png");
   width: fit-content;

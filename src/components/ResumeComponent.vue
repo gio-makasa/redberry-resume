@@ -50,18 +50,22 @@
       <hr />
     </div>
 
-    <!-- <div class="section" id="education">
+    <div v-for="i in educationData" :key="i" class="section" id="education">
       <h3>განათლება</h3>
-      <h4>სკოლა და სტუდენტი</h4>
-      <span>date</span>
+      <h4 v-if="i.institute || i.degree">
+        {{ i.institute
+        }}<span v-if="i.degree"
+          >, {{ i.degree }}
+        </span>
+      </h4>
+      <p v-if="i.due_date" class="dates">
+        {{ i.due_date }}
+      </p>
       <p>
-        ვსწავლობდი გულმოდგინეთ. მყავდა ფრიადები. რაც შემეძლო — ვქენი.
-        კომპიუტერები მიყვარდა. ვიჯექი ჩემთვის, ვაკაკუნებდი ამ კლავიშებზე.
-        მეუნებოდნენ — დაჯექი, წაიკითხე რამე, რას აკაკუნებ, დრო მოვა და
-        ჩაგიკაკუნებსო. აჰა, მოვიდა დრო და ვერა ვარ დეველოპერი?
+        {{ i.description }}
       </p>
       <hr />
-    </div> -->
+    </div>
 
     <img id="logo" src="../assets/images/logo.png" alt="redberryLogo" />
   </div>
@@ -69,11 +73,12 @@
 
 <script>
 export default {
-  props: ["personInfo", "experience"],
+  props: ["personInfo", "experience", "education", "send"],
   data() {
     return {
       personalData: {},
       experienceData: [],
+      educationData: [],
     };
   },
 
@@ -101,6 +106,20 @@ export default {
         JSON.stringify(this.experienceData)
       );
     },
+    education() {
+      let obj = {};
+      for (let [key, value] of this.education["data"]) {
+        obj[key] = value;
+      }
+      this.educationData[this.education["id"]] = obj;
+      localStorage.setItem(
+        "educationData",
+        JSON.stringify(this.educationData)
+      );
+    },
+    send(){
+      console.log(1)
+    }
   },
 
   mounted() {
@@ -109,6 +128,9 @@ export default {
     }
     if (localStorage.experienceData) {
       this.experienceData = JSON.parse(localStorage.getItem("experienceData"));
+    }
+    if (localStorage.educationData) {
+      this.educationData = JSON.parse(localStorage.getItem("educationData"));
     }
   },
 };

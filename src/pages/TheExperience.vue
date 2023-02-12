@@ -64,12 +64,16 @@ export default {
       let remove = [];
       let next = true;
       this.validatedExperience.forEach((expObj, id) => {
-        if (Object.values(expObj).includes(true) || Object.values(expObj).includes(false)) {
+        if (
+          Object.values(expObj).includes(true) ||
+          Object.values(expObj).includes(false) ||
+          id == 0
+        ) {
           for (let i in expObj) {
             if (expObj[i] != true) {
               this.failedInput = document.getElementsByName(i)[id];
               next = false;
-              return
+              return;
             }
           }
         } else {
@@ -96,6 +100,18 @@ export default {
     if (localStorage.validatedExperience) {
       this.validatedExperience = JSON.parse(
         localStorage.getItem("validatedExperience")
+      );
+    } else {
+      this.validatedExperience[0] = {
+        position: null,
+        employer: null,
+        start_date: null,
+        due_date: null,
+        description: null,
+      };
+      localStorage.setItem(
+        "validatedExperience",
+        JSON.stringify(this.validatedExperience)
       );
     }
   },

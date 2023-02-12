@@ -7,7 +7,7 @@
     </svg>
   </router-link>
   <success-box></success-box>
-  <resume-component></resume-component>
+  <resume-component :send="true"></resume-component>
 </template>
 
 <script>
