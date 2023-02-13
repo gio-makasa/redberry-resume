@@ -17,7 +17,7 @@
 
         <select name="degree" @input="Validation">
           <option value="" disabled selected>აირჩიეთ ხარისხი</option>
-          <option v-for="i in degrees" :key="i.id" :value="i.title">
+          <option v-for="i in degrees" :key="i.id" :value="i.id">
             {{ i.title }}
           </option>
         </select>

@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import { createStore } from 'vuex'
 import { createRouter, createWebHistory } from "vue-router";
 
 import App from './App.vue'
@@ -11,6 +12,15 @@ import TheResume from "./pages/TheResume.vue";
 
 import TheHeader from './components/TheHeader.vue'
 import ResumeComponent from './components/ResumeComponent.vue'
+
+const store = createStore({
+    state() {
+        return {
+            image: null,
+            degree: 0
+        }
+    }
+})
 
 const router = createRouter({
     history: createWebHistory(),
@@ -27,8 +37,9 @@ const router = createRouter({
 const app = createApp(App);
 
 app.use(router);
+app.use(store);
 
 app.component('TheHeader', TheHeader)
-.component('ResumeComponent', ResumeComponent)
+    .component('ResumeComponent', ResumeComponent)
 
 app.mount('#app');

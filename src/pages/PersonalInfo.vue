@@ -132,7 +132,7 @@ export default {
           break;
         case "phone_number":
           value = value.replaceAll(" ", "");
-          if (/^\+9955\d{8}/gm.test(value) && value.length == 13) {
+          if (/([+]995)[5][0-9]{8}/gm.test(value) && value.length == 13) {
             event.previousSibling.classList.add("success");
             event.previousSibling.classList.remove("failed");
             this.validated[name] = true;
@@ -148,6 +148,7 @@ export default {
     },
     saveData() {
       this.formData = new FormData(document.getElementById("form"));
+      this.$store.state.image = this.formData.get("image");
     },
     next() {
       for (let i in this.validated) {
@@ -314,7 +315,7 @@ button:focus {
 }
 
 .success[id="photo"]::after,
-.failed[id="photo"]::after{
+.failed[id="photo"]::after {
   top: 15%;
 }
 </style>

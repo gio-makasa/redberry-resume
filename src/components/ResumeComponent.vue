@@ -36,10 +36,7 @@
     <div v-for="i in experienceData" :key="i" class="section" id="experience">
       <h3>გამოცდილება</h3>
       <h4 v-if="i.position || i.employer">
-        {{ i.position
-        }}<span v-if="i.employer"
-          >, {{ i.employer }}
-        </span>
+        {{ i.position }}<span v-if="i.employer">, {{ i.employer }} </span>
       </h4>
       <p v-if="i.start_date || i.due_date" class="dates">
         {{ i.start_date }} - {{ i.due_date }}
@@ -52,11 +49,8 @@
 
     <div v-for="i in educationData" :key="i" class="section" id="education">
       <h3>განათლება</h3>
-      <h4 v-if="i.institute || i.degree">
-        {{ i.institute
-        }}<span v-if="i.degree"
-          >, {{ i.degree }}
-        </span>
+      <h4 v-if="i.institute || i.degree_id">
+        {{ i.institute }}<span v-if="i.degree_id">, {{ i.degree_id }} </span>
       </h4>
       <p v-if="i.due_date" class="dates">
         {{ i.due_date }}
@@ -72,6 +66,8 @@
 </template>
 
 <script>
+import axios from "axios";
+import { toRaw } from "vue";
 export default {
   props: ["personInfo", "experience", "education", "send"],
   data() {
@@ -79,6 +75,7 @@ export default {
       personalData: {},
       experienceData: [],
       educationData: [],
+      finalData: {},
     };
   },
 
@@ -112,17 +109,11 @@ export default {
         obj[key] = value;
       }
       this.educationData[this.education["id"]] = obj;
-      localStorage.setItem(
-        "educationData",
-        JSON.stringify(this.educationData)
-      );
+      localStorage.setItem("educationData", JSON.stringify(this.educationData));
     },
-    send(){
-      console.log(1)
-    }
   },
 
-  mounted() {
+  created() {
     if (localStorage.personalData) {
       this.personalData = JSON.parse(localStorage.getItem("personalData"));
     }
@@ -131,6 +122,21 @@ export default {
     }
     if (localStorage.educationData) {
       this.educationData = JSON.parse(localStorage.getItem("educationData"));
+    }
+  },
+
+  mounted() {
+    if (this.send) {
+      Object.assign(this.finalData, this.personalData);
+      this.finalData["image"] = this.$store.state.image;
+      this.finalData["experiences"] = toRaw(this.experienceData);
+      this.finalData["educations"] = toRaw(this.educationData);
+
+      axios
+        .post("https://resume.redberryinternship.ge/api/cvs", this.finalData)
+        .then((Response) => {
+          console.log(Response);
+        });
     }
   },
 };
