@@ -1,11 +1,12 @@
 <template>
-  <form>
+  <form :id="id">
     <div class="Input">
       <label for="position">თანამდებობა</label>
       <input
         type="text"
         name="position"
         placeholder="დეველოპერი, დიზაინერი, ა.შ."
+        v-model="$store.state.mainData.experiences[id - 1].position"
         @input="Validation"
       />
       <span>მინიმუმ 2 სიმბოლო</span>
@@ -17,6 +18,7 @@
         type="text"
         name="employer"
         placeholder="დამსაქმებელი"
+        v-model="$store.state.mainData.experiences[id - 1].employer"
         @input="Validation"
       />
       <span>მინიმუმ 2 სიმბოლო</span>
@@ -25,11 +27,21 @@
     <div id="dates">
       <div class="Input">
         <label for="start_date">დაწყების რიცხვი</label>
-        <input type="date" name="start_date" @input="Validation" />
+        <input
+          type="date"
+          name="start_date"
+          v-model="$store.state.mainData.experiences[id - 1].start_date"
+          @input="Validation"
+        />
       </div>
       <div class="Input">
         <label for="due_date">დამთავრების რიცხვი</label>
-        <input type="date" name="due_date" @input="Validation" />
+        <input
+          type="date"
+          name="due_date"
+          v-model="$store.state.mainData.experiences[id - 1].due_date"
+          @input="Validation"
+        />
       </div>
     </div>
 
@@ -38,6 +50,7 @@
       <textarea
         name="description"
         placeholder="როლი თანამდებობაზე და ზოგადი აღწერა"
+        v-model="$store.state.mainData.experiences[id - 1].description"
         @input="Validation"
       ></textarea>
     </div>
@@ -48,11 +61,10 @@
 
 <script>
 export default {
-  props: ["validatedExperience", "failedInput"],
+  props: ["id", "failedInput"],
   data() {
     return {
-      formData: {},
-      validatedExperienceObj: {
+      validatedExperience: {
         position: null,
         employer: null,
         start_date: null,
@@ -64,68 +76,61 @@ export default {
 
   methods: {
     Validation(event) {
-      let name = event.target.name;
-      let id = event.path.find((element) => element.tagName == "FORM").id - 1;
+      let name = "";
+      if (event.target) {
+        event = event.target;
+        name = event.name;
+      } else {
+        name = event.name;
+      }
       switch (name) {
         case "position":
         case "employer":
-          if (event.target.value.length >= 2) {
-            event.target.previousSibling.classList.add("success");
-            event.target.previousSibling.classList.remove("failed");
-            this.validatedExperienceObj[name] = true;
+          if (event.value.length >= 2) {
+            event.previousSibling.classList.add("success");
+            event.previousSibling.classList.remove("failed");
+            this.validatedExperience[name] = true;
           } else {
-            event.target.previousSibling.classList.add("failed");
-            event.target.previousSibling.classList.remove("success");
-            this.validatedExperienceObj[name] = false;
-            if (event.target.value.length == 0) {
-              this.validatedExperienceObj[name] = null;
+            event.previousSibling.classList.add("failed");
+            event.previousSibling.classList.remove("success");
+            this.validatedExperience[name] = false;
+            if (event.value.length == 0) {
+              this.validatedExperience[name] = null;
             }
           }
           break;
         default:
-          this.validatedExperienceObj[name] = true;
-          event.target.previousSibling.classList.add("success");
-          event.target.previousSibling.classList.remove("failed");
-          if (event.target.value.length == 0) {
-            this.validatedExperienceObj[name] = null;
-            event.target.previousSibling.classList.add("failed");
-            event.target.previousSibling.classList.remove("success");
+          this.validatedExperience[name] = true;
+          event.previousSibling.classList.add("success");
+          event.previousSibling.classList.remove("failed");
+          if (event.value.length == 0) {
+            this.validatedExperience[name] = null;
+            event.previousSibling.classList.add("failed");
+            event.previousSibling.classList.remove("success");
           }
           break;
       }
-      this.saveData(id);
-    },
-    saveData(id) {
-      let form = document.getElementsByTagName("form")[id];
-      this.formData = new FormData(form);
-      this.$emit("data", { id: id, data: this.formData });
-      this.$emit("validation", {
-        id: id,
-        validation: this.validatedExperienceObj,
-      });
-    },
-    markFails() {
-      console.log(1);
+      this.$store.commit("saveLS");
+      this.$emit("validatedObj", this.id - 1, this.validatedExperience);
     },
   },
 
-  watch: {
-    failedInput(data) {
-      data.previousSibling.classList.add("failed");
-    },
-  },
-
-  beforeCreate() {
-    if (this.validatedExperience) {
-      this.validatedExperienceObj = this.validatedExperience;
+  created() {
+    if (localStorage.validatedExperience) {
+      this.validatedExperience = JSON.parse(
+        localStorage.getItem("validatedExperience")
+      )[this.id - 1];
+    } else {
+      localStorage.setItem(
+        "validatedExperience",
+        JSON.stringify([this.validatedExperience])
+      );
     }
-    if (localStorage.experienceData) {
-      let experienceData = JSON.parse(localStorage.getItem("experienceData"));
-      for (let i in experienceData) {
-        for (let j in experienceData[i]) {
-          document.getElementsByName(j)[i].value = experienceData[i][j];
-        }
-      }
+  },
+
+  updated() {
+    if (this.failedInput) {
+      this.Validation(this.failedInput);
     }
   },
 };

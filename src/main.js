@@ -16,8 +16,42 @@ import ResumeComponent from './components/ResumeComponent.vue'
 const store = createStore({
     state() {
         return {
-            image: null,
-            degree: 0
+            mainData: {
+                name: null,
+                surname: null,
+                image: null,
+                about_me: null,
+                email: null,
+                phone_number: null,
+                experiences: [{
+                    position: null,
+                    employer: null,
+                    start_date: null,
+                    due_date: null,
+                    description: null,
+                }],
+                educations: [{
+                    institute: null,
+                    degree_id: null,
+                    due_date: null,
+                    description: null,
+                }],
+            },
+        }
+    },
+    mutations: {
+        saveLS(state) {
+            localStorage.setItem("mainData", JSON.stringify(state.mainData));
+        }
+    },
+    getters: {
+        imgURL(state) {
+            if (state.mainData.image) {
+                if (state.mainData.image.name) {
+                    return URL.createObjectURL(state.mainData.image);
+                }
+            }
+            return null;
         }
     }
 })

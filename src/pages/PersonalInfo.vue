@@ -10,16 +10,19 @@
               type="text"
               name="name"
               placeholder="ანზორ"
+              v-model="$store.state.mainData.name"
               @input="Validation($event.target)"
             />
             <span>მინიმუმ 2 ასო, ქართული ასოები</span>
           </div>
+
           <div class="Input">
             <label for="surname">გვარი</label>
             <input
               type="text"
               name="surname"
               placeholder="მუმლაძე"
+              v-model="$store.state.mainData.surname"
               @input="Validation($event.target)"
             />
             <span>მინიმუმ 2 ასო, ქართული ასოები</span>
@@ -43,8 +46,9 @@
           <label for="about_me">ჩემ შესახებ (არასავალდებულო)</label>
           <textarea
             name="about_me"
-            placeholder="ზოგადი ინფო შენ შესახებ"
-            @input="saveData"
+            placeholder="ზოგადი ინფო შენს შესახებ"
+            v-model="$store.state.mainData.about_me"
+            @input="Validation($event.target)"
           ></textarea>
         </div>
 
@@ -54,6 +58,7 @@
             type="text"
             name="email"
             placeholder="anzorr666@redberry.ge"
+            v-model="$store.state.mainData.email"
             @input="Validation($event.target)"
           />
           <span>უნდა მთავრდებოდეს @redberry.ge-ით</span>
@@ -65,6 +70,7 @@
             type="text"
             name="phone_number"
             placeholder="+995 551 12 34 56"
+            v-model="$store.state.mainData.phone_number"
             @input="Validation($event.target)"
           />
           <span>უნდა აკმაყოფილებდეს ქართული მობილურის ნომრის ფორმატს</span>
@@ -74,14 +80,13 @@
       </form>
     </main>
   </div>
-  <resume-component :personInfo="formData"></resume-component>
+  <ResumeComponent />
 </template>
 
 <script>
 export default {
   data() {
     return {
-      formData: {},
       validated: {
         name: false,
         surname: false,
@@ -116,6 +121,7 @@ export default {
           } else {
             event.parentElement.classList.add("success");
             event.parentElement.classList.remove("failed");
+            this.$store.state.mainData.image = event.files[0];
             this.validated[name] = true;
           }
           break;
@@ -143,13 +149,13 @@ export default {
           }
           break;
       }
-      localStorage.setItem("validated", JSON.stringify(this.validated));
-      this.saveData();
+      localStorage.setItem(
+        "validatedPersonalData",
+        JSON.stringify(this.validated)
+      );
+      this.$store.commit("saveLS");
     },
-    saveData() {
-      this.formData = new FormData(document.getElementById("form"));
-      this.$store.state.image = this.formData.get("image");
-    },
+
     next() {
       for (let i in this.validated) {
         if (!this.validated[i]) {
@@ -162,16 +168,10 @@ export default {
   },
 
   mounted() {
-    if (localStorage.personalData) {
-      let personalData = JSON.parse(localStorage.personalData);
-      for (let i in personalData) {
-        if (i !== "image") {
-          document.getElementsByName(i)[0].value = personalData[i];
-        }
-      }
-    }
     if (localStorage.validated) {
-      this.validated = JSON.parse(localStorage.getItem("validated"));
+      this.validated = JSON.parse(
+        localStorage.getItem("validatedPersonalData")
+      );
       this.validated["image"] = false;
     }
   },

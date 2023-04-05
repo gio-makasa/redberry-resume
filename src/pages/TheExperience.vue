@@ -2,15 +2,13 @@
   <div id="experience">
     <the-header page="2"></the-header>
     <main>
-      <experience-form
+      <ExperienceForm
         v-for="i in amountOfForm"
         :key="i"
         :id="i"
-        :validatedExperience="checkValidatedExperience(i - 1)"
         :failedInput="failedInput"
-        @data="getData"
-        @validation="getValidation"
-      ></experience-form>
+        @validatedObj="getValidation"
+      />
 
       <button @click="addForm" id="more">მეტი გამოცდილების დამატება</button>
 
@@ -20,7 +18,7 @@
       </div>
     </main>
   </div>
-  <resume-component :experience="experienceData"></resume-component>
+  <ResumeComponent />
 </template>
 
 <script>
@@ -30,39 +28,34 @@ export default {
   components: { ExperienceForm },
   data() {
     return {
-      experienceData: {},
       validatedExperience: [],
       amountOfForm: 1,
-      failedInput: {},
+      failedInput: null,
     };
   },
 
   methods: {
     addForm() {
       this.amountOfForm++;
+      this.$store.state.mainData.experiences[this.id - 1] = {
+        position: null,
+        employer: null,
+        start_date: null,
+        due_date: null,
+        description: null,
+      };
     },
-    getData(data) {
-      this.experienceData = data;
-    },
-    getValidation(data) {
-      this.validatedExperience[data.id] = data.validation;
+    getValidation(id, validatedExperienceObj) {
+      this.validatedExperience[id] = validatedExperienceObj;
       localStorage.setItem(
         "validatedExperience",
         JSON.stringify(this.validatedExperience)
       );
     },
-    checkValidatedExperience(id) {
-      if (this.validatedExperience[id]) {
-        return this.validatedExperience[id];
-      }
-      return null;
-    },
     back() {
       this.$router.replace({ path: "/PersonalInfo" });
     },
     next() {
-      let remove = [];
-      let next = true;
       this.validatedExperience.forEach((expObj, id) => {
         if (
           Object.values(expObj).includes(true) ||
@@ -72,46 +65,21 @@ export default {
           for (let i in expObj) {
             if (expObj[i] != true) {
               this.failedInput = document.getElementsByName(i)[id];
-              next = false;
               return;
             }
           }
-        } else {
-          remove.push(id);
         }
-      });
-      if (next) {
-        remove.forEach((id) => {
-          let data = JSON.parse(localStorage.getItem("experienceData"));
-          data.splice(id, 1);
-          localStorage.setItem("experienceData", JSON.stringify(data));
-        });
         this.$router.replace({ path: "/education" });
-      }
+      });
     },
   },
 
-  created() {
-    if (localStorage.experienceData) {
-      this.amountOfForm = JSON.parse(
-        localStorage.getItem("experienceData")
-      ).length;
-    }
+  mounted() {
+    this.amountOfForm = this.$store.state.mainData.experiences.length;
+
     if (localStorage.validatedExperience) {
       this.validatedExperience = JSON.parse(
         localStorage.getItem("validatedExperience")
-      );
-    } else {
-      this.validatedExperience[0] = {
-        position: null,
-        employer: null,
-        start_date: null,
-        due_date: null,
-        description: null,
-      };
-      localStorage.setItem(
-        "validatedExperience",
-        JSON.stringify(this.validatedExperience)
       );
     }
   },

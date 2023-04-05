@@ -6,14 +6,28 @@
       />
     </svg>
   </router-link>
-  <success-box></success-box>
-  <resume-component :send="true"></resume-component>
+  <SuccessBox />
+  <ResumeComponent :send="true" :degrees="degrees" />
 </template>
 
 <script>
 import SuccessBox from "../components/SuccessBox.vue";
 export default {
   components: { SuccessBox },
+  data() {
+    return {
+      degrees: [],
+    };
+  },
+  beforeCreate() {
+    fetch("https://resume.redberryinternship.ge/api/degrees")
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        this.degrees = data;
+      });
+  },
 };
 </script>
 

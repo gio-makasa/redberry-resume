@@ -2,16 +2,14 @@
   <div id="education">
     <the-header page="3"></the-header>
     <main>
-      <education-form
-        v-for="i in amounOfForm"
-        :id="i"
+      <EducationForm
+        v-for="i in amountOfForm"
         :key="i"
-        :degrees="degrees"
-        :validatedEducation="checkValidatedEducation(i - 1)"
+        :id="i"
         :failedInput="failedInput"
-        @data="getData"
-        @validation="getValidation"
-      ></education-form>
+        @validatedObj="getValidation"
+        :degrees="degrees"
+      />
 
       <button @click="addForm" id="more">სხვა სასწავლებლის დამატება</button>
 
@@ -21,7 +19,7 @@
       </div>
     </main>
   </div>
-  <resume-component :education="educationData"></resume-component>
+  <ResumeComponent :degrees="degrees" />
 </template>
 
 <script>
@@ -31,64 +29,48 @@ export default {
   components: { EducationForm },
   data() {
     return {
-      amounOfForm: 1,
-      degrees: [],
-      educationData: {},
       validatedEducation: [],
-      failedInput: {},
+      amountOfForm: 1,
+      failedInput: null,
+      degrees: [],
     };
   },
   methods: {
     addForm() {
-      this.amounOfForm++;
+      this.amountOfForm++;
+      this.$store.state.mainData.educations[this.id - 1] = {
+        institute: null,
+        degree_id: null,
+        due_date: null,
+        description: null,
+      };
     },
-    getData(data) {
-      this.educationData = data;
-    },
-    getValidation(data) {
-      this.validatedEducation[data.id] = data.validation;
+    getValidation(id, validatedEducationObj) {
+      this.validatedEducation[id] = validatedEducationObj;
       localStorage.setItem(
         "validatedEducation",
         JSON.stringify(this.validatedEducation)
       );
     },
-    checkValidatedEducation(id) {
-      if (this.validatedEducation[id]) {
-        return this.validatedEducation[id];
-      }
-      return null;
-    },
     back() {
-      this.$router.replace({ path: "/experience" });
+      this.$router.replace({ path: "/Experience" });
     },
     next() {
-      let remove = [];
-      let next = true;
-      this.validatedEducation.forEach((expObj, id) => {
+      this.validatedEducation.forEach((eduObj, id) => {
         if (
-          Object.values(expObj).includes(true) ||
-          Object.values(expObj).includes(false) ||
+          Object.values(eduObj).includes(true) ||
+          Object.values(eduObj).includes(false) ||
           id == 0
         ) {
-          for (let i in expObj) {
-            if (expObj[i] != true) {
+          for (let i in eduObj) {
+            if (eduObj[i] != true) {
               this.failedInput = document.getElementsByName(i)[id];
-              next = false;
               return;
             }
           }
-        } else {
-          remove.push(id);
         }
-      });
-      if (next) {
-        remove.forEach((id) => {
-          let data = JSON.parse(localStorage.getItem("educationData"));
-          data.splice(id, 1);
-          localStorage.setItem("educationData", JSON.stringify(data));
-        });
         this.$router.replace({ path: "/Resume" });
-      }
+      });
     },
   },
 
@@ -102,26 +84,12 @@ export default {
       });
   },
 
-  created() {
-    if (localStorage.educationData) {
-      this.amountOfForm = JSON.parse(
-        localStorage.getItem("educationData")
-      ).length;
-    }
+  mounted() {
+    this.amountOfForm = this.$store.state.mainData.educations.length;
+
     if (localStorage.validatedEducation) {
       this.validatedEducation = JSON.parse(
         localStorage.getItem("validatedEducation")
-      );
-    } else {
-      this.validatedEducation[0] = {
-        institute: null,
-        degree: null,
-        due_date: null,
-        description: null,
-      };
-      localStorage.setItem(
-        "validatedEducation",
-        JSON.stringify(this.validatedEducation)
       );
     }
   },

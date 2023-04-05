@@ -1,11 +1,12 @@
 <template>
-  <form>
+  <form :id="id">
     <div class="Input">
       <label for="institute">სასწავლებელი</label>
       <input
         type="text"
         name="institute"
         placeholder="სასწავლებელი"
+        v-model="$store.state.mainData.educations[id - 1].institute"
         @input="Validation"
       />
       <span>მინიმუმ 2 სიმბოლო</span>
@@ -13,9 +14,12 @@
 
     <div id="dblInput">
       <div class="Input">
-        <label for="degree">ხარისხი</label>
-
-        <select name="degree" @input="Validation">
+        <label for="degree_id">ხარისხი</label>
+        <select
+          name="degree_id"
+          v-model="$store.state.mainData.educations[id - 1].degree_id"
+          @change="Validation"
+        >
           <option value="" disabled selected>აირჩიეთ ხარისხი</option>
           <option v-for="i in degrees" :key="i.id" :value="i.id">
             {{ i.title }}
@@ -25,7 +29,12 @@
 
       <div class="Input">
         <label for="due_date">დამთავრების რიცხვი</label>
-        <input type="date" name="due_date" @input="Validation" />
+        <input
+          type="date"
+          name="due_date"
+          v-model="$store.state.mainData.educations[id - 1].due_date"
+          @input="Validation"
+        />
       </div>
     </div>
 
@@ -34,6 +43,7 @@
       <textarea
         name="description"
         placeholder="განათლების აღწერა"
+        v-model="$store.state.mainData.educations[id - 1].description"
         @input="Validation"
       ></textarea>
     </div>
@@ -44,14 +54,13 @@
 
 <script>
 export default {
-  props: ["degrees", "validatedEducation", "failedInput"],
+  props: ["id", "failedInput", "degrees"],
 
   data() {
     return {
-      formData: {},
-      validatedEducationObj: {
+      validatedEducation: {
         institute: null,
-        degree: null,
+        degree_id: null,
         due_date: null,
         description: null,
       },
@@ -60,72 +69,60 @@ export default {
 
   methods: {
     Validation(event) {
-      let name = event.target.name;
-      let id = event.path.find((element) => element.tagName == "FORM").id - 1;
+      let name = "";
+      if (event.target) {
+        event = event.target;
+        name = event.name;
+      } else {
+        name = event.name;
+      }
       switch (name) {
         case "institute":
-          if (event.target.value.length >= 2) {
-            event.target.previousSibling.classList.add("success");
-            event.target.previousSibling.classList.remove("failed");
-            this.validatedEducationObj[name] = true;
+          if (event.value.length >= 2) {
+            event.previousSibling.classList.add("success");
+            event.previousSibling.classList.remove("failed");
+            this.validatedEducation[name] = true;
           } else {
-            event.target.previousSibling.classList.add("failed");
-            event.target.previousSibling.classList.remove("success");
-            this.validatedEducationObj[name] = false;
-            if (event.target.value.length == 0) {
-              this.validatedEducationObj[name] = null;
+            event.previousSibling.classList.add("failed");
+            event.previousSibling.classList.remove("success");
+            this.validatedEducation[name] = false;
+            if (event.value.length == 0) {
+              this.validatedEducation[name] = null;
             }
           }
           break;
         default:
-          this.validatedEducationObj[name] = true;
-          event.target.previousSibling.classList.add("success");
-          event.target.previousSibling.classList.remove("failed");
-          if (event.target.value.length == 0) {
-            this.validatedEducationObj[name] = null;
-            event.target.previousSibling.classList.add("failed");
-            event.target.previousSibling.classList.remove("success");
+          this.validatedEducation[name] = true;
+          event.previousSibling.classList.add("success");
+          event.previousSibling.classList.remove("failed");
+          if (event.value.length == 0) {
+            this.validatedEducation[name] = null;
+            event.previousSibling.classList.add("failed");
+            event.previousSibling.classList.remove("success");
           }
           break;
       }
-      this.saveData(id);
-    },
-    saveData(id) {
-      let form = document.getElementsByTagName("form")[id];
-      this.formData = new FormData(form);
-      this.$emit("data", { id: id, data: this.formData });
-      this.$emit("validation", {
-        id: id,
-        validation: this.validatedEducationObj,
-      });
-    },
-    markFails() {
-      console.log(1);
+      this.$emit("validatedObj", this.id - 1, this.validatedEducation);
+      this.$store.commit("saveLS");
     },
   },
 
-  watch: {
-    failedInput(data) {
-      data.previousSibling.classList.add("failed");
-    },
-  },
-
-  beforeCreate() {
-    if (this.validatedEducation) {
-      this.validatedEducationObj = this.validatedEducation;
+  created() {
+    if (localStorage.validatedEducation) {
+      this.validatedEducation = JSON.parse(
+        localStorage.getItem("validatedEducation")
+      )[this.id - 1];
     } else {
       localStorage.setItem(
         "validatedEducation",
-        JSON.stringify([this.validatedEducationObj])
+        JSON.stringify([this.validatedEducation])
       );
     }
-    if (localStorage.educationData) {
-      let educationData = JSON.parse(localStorage.getItem("educationData"));
-      for (let i in educationData) {
-        for (let j in educationData[i]) {
-          document.getElementsByName(j)[i].value = educationData[i][j];
-        }
-      }
+  },
+
+  updated() {
+    if (this.failedInput) {
+      this.Validation(this.failedInput);
     }
   },
 };
