@@ -38,12 +38,22 @@ export default {
   methods: {
     addForm() {
       this.amountOfForm++;
-      this.$store.state.mainData.educations[this.id - 1] = {
+      this.$store.commit({
+        type: "addObj",
+        field: "educations",
+        obj: {
+          institute: null,
+          degree_id: null,
+          due_date: null,
+          description: null,
+        },
+      });
+      this.getValidation(this.amountOfForm - 1, {
         institute: null,
         degree_id: null,
         due_date: null,
         description: null,
-      };
+      });
     },
     getValidation(id, validatedEducationObj) {
       this.validatedEducation[id] = validatedEducationObj;
@@ -56,6 +66,7 @@ export default {
       this.$router.replace({ path: "/Experience" });
     },
     next() {
+      let next = true;
       this.validatedEducation.forEach((eduObj, id) => {
         if (
           Object.values(eduObj).includes(true) ||
@@ -65,11 +76,13 @@ export default {
           for (let i in eduObj) {
             if (eduObj[i] != true) {
               this.failedInput = document.getElementsByName(i)[id];
-              return;
+              next = false;
             }
           }
         }
-        this.$router.replace({ path: "/Resume" });
+        if (next) {
+          this.$router.replace({ path: "/Resume" });
+        }
       });
     },
   },
@@ -90,6 +103,18 @@ export default {
     if (localStorage.validatedEducation) {
       this.validatedEducation = JSON.parse(
         localStorage.getItem("validatedEducation")
+      );
+    } else {
+      localStorage.setItem(
+        "validatedEducation",
+        JSON.stringify([
+          {
+            institute: null,
+            degree_id: null,
+            due_date: null,
+            description: null,
+          },
+        ])
       );
     }
   },

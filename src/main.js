@@ -42,6 +42,12 @@ const store = createStore({
     mutations: {
         saveLS(state) {
             localStorage.setItem("mainData", JSON.stringify(state.mainData));
+        },
+        getLS(state) {
+            state.mainData = JSON.parse(localStorage.mainData);
+        },
+        addObj(state, payload) {
+            state.mainData[payload.field].push(payload.obj);
         }
     },
     getters: {

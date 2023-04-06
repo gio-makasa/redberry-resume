@@ -37,13 +37,24 @@ export default {
   methods: {
     addForm() {
       this.amountOfForm++;
-      this.$store.state.mainData.experiences[this.id - 1] = {
+      this.$store.commit({
+        type: "addObj",
+        field: "experiences",
+        obj: {
+          position: null,
+          employer: null,
+          start_date: null,
+          due_date: null,
+          description: null,
+        },
+      });
+      this.getValidation(this.amountOfForm - 1, {
         position: null,
         employer: null,
         start_date: null,
         due_date: null,
         description: null,
-      };
+      });
     },
     getValidation(id, validatedExperienceObj) {
       this.validatedExperience[id] = validatedExperienceObj;
@@ -56,6 +67,7 @@ export default {
       this.$router.replace({ path: "/PersonalInfo" });
     },
     next() {
+      let next = true;
       this.validatedExperience.forEach((expObj, id) => {
         if (
           Object.values(expObj).includes(true) ||
@@ -65,12 +77,14 @@ export default {
           for (let i in expObj) {
             if (expObj[i] != true) {
               this.failedInput = document.getElementsByName(i)[id];
-              return;
+              next = false;
             }
           }
         }
-        this.$router.replace({ path: "/education" });
       });
+      if (next) {
+        this.$router.replace({ path: "/education" });
+      }
     },
   },
 
@@ -80,6 +94,19 @@ export default {
     if (localStorage.validatedExperience) {
       this.validatedExperience = JSON.parse(
         localStorage.getItem("validatedExperience")
+      );
+    } else {
+      localStorage.setItem(
+        "validatedExperience",
+        JSON.stringify([
+          {
+            position: null,
+            employer: null,
+            start_date: null,
+            due_date: null,
+            description: null,
+          },
+        ])
       );
     }
   },

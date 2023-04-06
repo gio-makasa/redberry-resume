@@ -100,13 +100,14 @@ export default {
           }
           break;
         default:
-          this.validatedExperience[name] = true;
-          event.previousSibling.classList.add("success");
-          event.previousSibling.classList.remove("failed");
           if (event.value.length == 0) {
             this.validatedExperience[name] = null;
             event.previousSibling.classList.add("failed");
             event.previousSibling.classList.remove("success");
+          } else {
+            this.validatedExperience[name] = true;
+            event.previousSibling.classList.add("success");
+            event.previousSibling.classList.remove("failed");
           }
           break;
       }
@@ -120,11 +121,6 @@ export default {
       this.validatedExperience = JSON.parse(
         localStorage.getItem("validatedExperience")
       )[this.id - 1];
-    } else {
-      localStorage.setItem(
-        "validatedExperience",
-        JSON.stringify([this.validatedExperience])
-      );
     }
   },
 

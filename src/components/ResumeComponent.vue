@@ -131,7 +131,7 @@ export default {
 
     if (getData) {
       if (localStorage.mainData) {
-        this.$store.state.mainData = JSON.parse(localStorage.mainData);
+        this.$store.commit("getLS");
       }
     }
 

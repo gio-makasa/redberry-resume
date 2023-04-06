@@ -92,13 +92,14 @@ export default {
           }
           break;
         default:
-          this.validatedEducation[name] = true;
-          event.previousSibling.classList.add("success");
-          event.previousSibling.classList.remove("failed");
           if (event.value.length == 0) {
             this.validatedEducation[name] = null;
             event.previousSibling.classList.add("failed");
             event.previousSibling.classList.remove("success");
+          } else {
+            this.validatedEducation[name] = true;
+            event.previousSibling.classList.add("success");
+            event.previousSibling.classList.remove("failed");
           }
           break;
       }
@@ -112,11 +113,6 @@ export default {
       this.validatedEducation = JSON.parse(
         localStorage.getItem("validatedEducation")
       )[this.id - 1];
-    } else {
-      localStorage.setItem(
-        "validatedEducation",
-        JSON.stringify([this.validatedEducation])
-      );
     }
   },
 
