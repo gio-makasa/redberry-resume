@@ -2,24 +2,15 @@
   <form :id="id">
     <div class="Input">
       <label for="institute">სასწავლებელი</label>
-      <input
-        type="text"
-        name="institute"
-        placeholder="სასწავლებელი"
-        v-model="$store.state.mainData.educations[id - 1].institute"
-        @input="Validation"
-      />
+      <input type="text" name="institute" placeholder="სასწავლებელი"
+        v-model="$store.state.mainData.educations[id - 1].institute" @input="Validation" />
       <span>მინიმუმ 2 სიმბოლო</span>
     </div>
 
     <div id="dblInput">
       <div class="Input">
         <label for="degree_id">ხარისხი</label>
-        <select
-          name="degree_id"
-          v-model="$store.state.mainData.educations[id - 1].degree_id"
-          @change="Validation"
-        >
+        <select name="degree_id" v-model="$store.state.mainData.educations[id - 1].degree_id" @change="Validation">
           <option value="" disabled selected>აირჩიეთ ხარისხი</option>
           <option v-for="i in degrees" :key="i.id" :value="i.id">
             {{ i.title }}
@@ -29,99 +20,86 @@
 
       <div class="Input">
         <label for="due_date">დამთავრების რიცხვი</label>
-        <input
-          type="date"
-          name="due_date"
-          v-model="$store.state.mainData.educations[id - 1].due_date"
-          @input="Validation"
-        />
+        <input type="date" name="due_date" v-model="$store.state.mainData.educations[id - 1].due_date"
+          @input="Validation" />
       </div>
     </div>
 
     <div class="Input">
       <label for="description">აღწერა</label>
-      <textarea
-        name="description"
-        placeholder="განათლების აღწერა"
-        v-model="$store.state.mainData.educations[id - 1].description"
-        @input="Validation"
-      ></textarea>
+      <textarea name="description" placeholder="განათლების აღწერა"
+        v-model="$store.state.mainData.educations[id - 1].description" @input="Validation"></textarea>
     </div>
 
     <hr />
   </form>
 </template>
 
-<script>
-export default {
-  props: ["id", "failedInput", "degrees"],
+<script setup>
+import { onUpdated, reactive, toRaw } from 'vue';
+import { useStore } from 'vuex';
 
-  data() {
-    return {
-      validatedEducation: {
-        institute: null,
-        degree_id: null,
-        due_date: null,
-        description: null,
-      },
-    };
-  },
+const store = useStore();
+const props = defineProps(["id", "failedInput", "degrees"]);
+const emit = defineEmits(['validatedObj']);
 
-  methods: {
-    Validation(event) {
-      let name = "";
-      if (event.target) {
-        event = event.target;
-        name = event.name;
+let validatedEducation = reactive({
+  institute: null,
+  degree_id: null,
+  due_date: null,
+  description: null,
+})
+
+function Validation(event) {
+  let name = "";
+  if (event.target) {
+    event = event.target;
+    name = event.name;
+  } else {
+    name = event.name;
+  }
+  switch (name) {
+    case "institute":
+      if (event.value.length >= 2) {
+        event.previousSibling.classList.add("success");
+        event.previousSibling.classList.remove("failed");
+        validatedEducation[name] = true;
       } else {
-        name = event.name;
+        event.previousSibling.classList.add("failed");
+        event.previousSibling.classList.remove("success");
+        validatedEducation[name] = false;
+        if (event.value.length == 0) {
+          validatedEducation[name] = null;
+        }
       }
-      switch (name) {
-        case "institute":
-          if (event.value.length >= 2) {
-            event.previousSibling.classList.add("success");
-            event.previousSibling.classList.remove("failed");
-            this.validatedEducation[name] = true;
-          } else {
-            event.previousSibling.classList.add("failed");
-            event.previousSibling.classList.remove("success");
-            this.validatedEducation[name] = false;
-            if (event.value.length == 0) {
-              this.validatedEducation[name] = null;
-            }
-          }
-          break;
-        default:
-          if (event.value.length == 0) {
-            this.validatedEducation[name] = null;
-            event.previousSibling.classList.add("failed");
-            event.previousSibling.classList.remove("success");
-          } else {
-            this.validatedEducation[name] = true;
-            event.previousSibling.classList.add("success");
-            event.previousSibling.classList.remove("failed");
-          }
-          break;
+      break;
+    default:
+      if (event.value.length == 0) {
+        validatedEducation[name] = null;
+        event.previousSibling.classList.add("failed");
+        event.previousSibling.classList.remove("success");
+      } else {
+        validatedEducation[name] = true;
+        event.previousSibling.classList.add("success");
+        event.previousSibling.classList.remove("failed");
       }
-      this.$emit("validatedObj", this.id - 1, this.validatedEducation);
-      this.$store.commit("saveLS");
-    },
-  },
+      break;
+  }
+  emit("validatedObj", props.id - 1, validatedEducation);
+  store.commit("saveLS");
+}
 
-  created() {
-    if (localStorage.validatedEducation) {
-      this.validatedEducation = JSON.parse(
-        localStorage.getItem("validatedEducation")
-      )[this.id - 1];
-    }
-  },
+if (localStorage.validatedEducation) {
+  validatedEducation = JSON.parse(
+    localStorage.getItem("validatedEducation")
+  )[props.id - 1];
+}
 
-  updated() {
-    if (this.failedInput) {
-      this.Validation(this.failedInput);
-    }
-  },
-};
+onUpdated(() => {
+  if (props.failedInput) {
+    Validation(props.failedInput);
+  }
+})
 </script>
 
 <style scoped>
@@ -171,6 +149,7 @@ textarea {
   border-radius: 0.5rem;
   border: 2px solid var(--lightblack);
 }
+
 hr {
   background-color: #c1c1c1;
 }
@@ -179,8 +158,8 @@ hr {
   color: var(--offblack);
 }
 
-.success + textarea,
-.success + input {
+.success+textarea,
+.success+input {
   border-color: var(--successgreen);
 }
 
@@ -197,8 +176,8 @@ hr {
   color: var(--failedred);
 }
 
-.failed + textarea,
-.failed + input {
+.failed+textarea,
+.failed+input {
   border-color: var(--failedred);
 }
 

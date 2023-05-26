@@ -6,25 +6,15 @@
         <div id="fullName">
           <div class="Input">
             <label for="name">სახელი</label>
-            <input
-              type="text"
-              name="name"
-              placeholder="ანზორ"
-              v-model="$store.state.mainData.name"
-              @input="Validation($event.target)"
-            />
+            <input type="text" name="name" placeholder="ანზორ" v-model="$store.state.mainData.name"
+              @input="Validation($event.target)" />
             <span>მინიმუმ 2 ასო, ქართული ასოები</span>
           </div>
 
           <div class="Input">
             <label for="surname">გვარი</label>
-            <input
-              type="text"
-              name="surname"
-              placeholder="მუმლაძე"
-              v-model="$store.state.mainData.surname"
-              @input="Validation($event.target)"
-            />
+            <input type="text" name="surname" placeholder="მუმლაძე" v-model="$store.state.mainData.surname"
+              @input="Validation($event.target)" />
             <span>მინიმუმ 2 ასო, ქართული ასოები</span>
           </div>
         </div>
@@ -33,46 +23,27 @@
           <label for="image">პირადი ფოტოს ატვირთვა</label>
           <div id="photo">
             ატვირთვა
-            <input
-              type="file"
-              name="image"
-              accept="image/png, image/jpeg"
-              @input="Validation($event.target)"
-            />
+            <input type="file" name="image" accept="image/png, image/jpeg" @input="Validation($event.target)" />
           </div>
         </div>
 
         <div class="Input">
           <label for="about_me">ჩემ შესახებ (არასავალდებულო)</label>
-          <textarea
-            name="about_me"
-            placeholder="ზოგადი ინფო შენს შესახებ"
-            v-model="$store.state.mainData.about_me"
-            @input="Validation($event.target)"
-          ></textarea>
+          <textarea name="about_me" placeholder="ზოგადი ინფო შენს შესახებ" v-model="$store.state.mainData.about_me"
+            @input="Validation($event.target)"></textarea>
         </div>
 
         <div class="Input">
           <label for="email">ელ.ფოსტა</label>
-          <input
-            type="text"
-            name="email"
-            placeholder="anzorr666@redberry.ge"
-            v-model="$store.state.mainData.email"
-            @input="Validation($event.target)"
-          />
+          <input type="text" name="email" placeholder="anzorr666@redberry.ge" v-model="$store.state.mainData.email"
+            @input="Validation($event.target)" />
           <span>უნდა მთავრდებოდეს @redberry.ge-ით</span>
         </div>
 
         <div class="Input">
           <label for="phone_number">მობილურის ნომერი</label>
-          <input
-            type="text"
-            name="phone_number"
-            placeholder="+995 551 12 34 56"
-            v-model="$store.state.mainData.phone_number"
-            @input="Validation($event.target)"
-          />
+          <input type="text" name="phone_number" placeholder="+995 551 12 34 56"
+            v-model="$store.state.mainData.phone_number" @input="Validation($event.target)" />
           <span>უნდა აკმაყოფილებდეს ქართული მობილურის ნომრის ფორმატს</span>
         </div>
 
@@ -83,99 +54,98 @@
   <ResumeComponent />
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      validated: {
-        name: false,
-        surname: false,
-        image: false,
-        email: false,
-        phone_number: false,
-      },
-    };
-  },
+<script setup>
+import { onMounted, reactive } from 'vue';
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 
-  methods: {
-    Validation(event) {
-      let name = event.name;
-      let value = event.value;
-      switch (name) {
-        case "name":
-        case "surname":
-          if (/^[ა-ჰ]+[ა-ჰ]$/g.test(value)) {
-            event.previousSibling.classList.add("success");
-            event.previousSibling.classList.remove("failed");
-            this.validated[name] = true;
-          } else {
-            event.previousSibling.classList.add("failed");
-            event.previousSibling.classList.remove("success");
-            this.validated[name] = false;
-          }
-          break;
-        case "image":
-          if (value == "") {
-            event.parentElement.classList.add("failed");
-            event.parentElement.classList.remove("success");
-          } else {
-            event.parentElement.classList.add("success");
-            event.parentElement.classList.remove("failed");
-            this.$store.state.mainData.image = event.files[0];
-            this.validated[name] = true;
-          }
-          break;
-        case "email":
-          if (/@redberry.ge$/g.test(value) && /^[a-z]/i.test(value)) {
-            event.previousSibling.classList.add("success");
-            event.previousSibling.classList.remove("failed");
-            this.validated[name] = true;
-          } else {
-            event.previousSibling.classList.add("failed");
-            event.previousSibling.classList.remove("success");
-            this.validated[name] = false;
-          }
-          break;
-        case "phone_number":
-          value = value.replaceAll(" ", "");
-          if (/([+]995)[5][0-9]{8}/gm.test(value) && value.length == 13) {
-            event.previousSibling.classList.add("success");
-            event.previousSibling.classList.remove("failed");
-            this.validated[name] = true;
-          } else {
-            event.previousSibling.classList.add("failed");
-            event.previousSibling.classList.remove("success");
-            this.validated[name] = false;
-          }
-          break;
+const store = useStore();
+const router = useRouter();
+
+const validated = reactive({
+  name: false,
+  surname: false,
+  image: false,
+  email: false,
+  phone_number: false,
+})
+
+function Validation(event) {
+  let name = event.name;
+  let value = event.value;
+  switch (name) {
+    case "name":
+    case "surname":
+      if (/^[ა-ჰ]+[ა-ჰ]$/g.test(value)) {
+        event.previousSibling.classList.add("success");
+        event.previousSibling.classList.remove("failed");
+        validated[name] = true;
+      } else {
+        event.previousSibling.classList.add("failed");
+        event.previousSibling.classList.remove("success");
+        validated[name] = false;
       }
-      localStorage.setItem(
-        "validatedPersonalData",
-        JSON.stringify(this.validated)
-      );
-      this.$store.commit("saveLS");
-    },
-
-    next() {
-      for (let i in this.validated) {
-        if (!this.validated[i]) {
-          this.Validation(document.getElementsByName(i)[0]);
-          return;
-        }
+      break;
+    case "image":
+      if (value == "") {
+        event.parentElement.classList.add("failed");
+        event.parentElement.classList.remove("success");
+      } else {
+        event.parentElement.classList.add("success");
+        event.parentElement.classList.remove("failed");
+        store.state.mainData.image = event.files[0];
+        validated[name] = true;
       }
-      this.$router.replace({ path: "/experience" });
-    },
-  },
+      break;
+    case "email":
+      if (/@redberry.ge$/g.test(value) && /^[a-z]/i.test(value)) {
+        event.previousSibling.classList.add("success");
+        event.previousSibling.classList.remove("failed");
+        validated[name] = true;
+      } else {
+        event.previousSibling.classList.add("failed");
+        event.previousSibling.classList.remove("success");
+        validated[name] = false;
+      }
+      break;
+    case "phone_number":
+      value = value.replaceAll(" ", "");
+      if (/([+]995)[5][0-9]{8}/gm.test(value) && value.length == 13) {
+        event.previousSibling.classList.add("success");
+        event.previousSibling.classList.remove("failed");
+        validated[name] = true;
+      } else {
+        event.previousSibling.classList.add("failed");
+        event.previousSibling.classList.remove("success");
+        validated[name] = false;
+      }
+      break;
+  }
+  localStorage.setItem(
+    "validatedPersonalData",
+    JSON.stringify(validated)
+  );
+  store.commit("saveLS");
+}
 
-  mounted() {
-    if (localStorage.validated) {
-      this.validated = JSON.parse(
-        localStorage.getItem("validatedPersonalData")
-      );
-      this.validated["image"] = false;
+function next() {
+  for (let i in validated) {
+    if (!validated[i]) {
+      Validation(document.getElementsByName(i)[0]);
+      return;
     }
-  },
-};
+  }
+  router.replace({ path: "/experience" });
+}
+
+onMounted(() => {
+  if (localStorage.validated) {
+    validated = JSON.parse(
+      localStorage.getItem("validatedPersonalData")
+    );
+    validated["image"] = false;
+  }
+})
 </script>
 
 <style scoped>
@@ -284,7 +254,7 @@ button:focus {
   color: var(--offblack);
 }
 
-.success + input {
+.success+input {
   border-color: var(--successgreen);
 }
 
@@ -301,7 +271,7 @@ button:focus {
   color: var(--failedred);
 }
 
-.failed + input {
+.failed+input {
   border-color: var(--failedred);
 }
 

@@ -6,37 +6,40 @@
   </main>
 </template>
 
-<script>
-export default {
-  mounted() {
-    localStorage.clear();
-    this.$store.state.mainData = {
-      name: null,
-      surname: null,
-      image: null,
-      about_me: null,
-      email: null,
-      phone_number: null,
-      experiences: [
-        {
-          position: null,
-          employer: null,
-          start_date: null,
-          due_date: null,
-          description: null,
-        },
-      ],
-      educations: [
-        {
-          institute: null,
-          degree_id: null,
-          due_date: null,
-          description: null,
-        },
-      ],
-    };
-  },
-};
+<script setup>
+import { onMounted } from 'vue';
+import { useStore } from 'vuex'
+
+const store = useStore();
+
+onMounted(() => {
+  localStorage.clear();
+  store.state.mainData = {
+    name: null,
+    surname: null,
+    image: null,
+    about_me: null,
+    email: null,
+    phone_number: null,
+    experiences: [
+      {
+        position: null,
+        employer: null,
+        start_date: null,
+        due_date: null,
+        description: null,
+      },
+    ],
+    educations: [
+      {
+        institute: null,
+        degree_id: null,
+        due_date: null,
+        description: null,
+      },
+    ],
+  };
+})
 </script>
 
 <style scoped>

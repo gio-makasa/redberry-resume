@@ -2,13 +2,8 @@
   <div id="experience">
     <the-header page="2"></the-header>
     <main>
-      <ExperienceForm
-        v-for="i in amountOfForm"
-        :key="i"
-        :id="i"
-        :failedInput="failedInput"
-        @validatedObj="getValidation"
-      />
+      <ExperienceForm v-for="i in amountOfForm" :key="i" :id="i" :failedInput="failedInput"
+        @validatedObj="getValidation" />
 
       <button @click="addForm" id="more">მეტი გამოცდილების დამატება</button>
 
@@ -21,96 +16,97 @@
   <ResumeComponent />
 </template>
 
-<script>
+<script setup>
+import { onMounted, ref, toRaw } from "vue";
+import { useStore } from "vuex";
+import { useRouter } from "vue-router";
 import ExperienceForm from "../components/ExperienceForm.vue";
 
-export default {
-  components: { ExperienceForm },
-  data() {
-    return {
-      validatedExperience: [],
-      amountOfForm: 1,
-      failedInput: null,
-    };
-  },
+const store = useStore();
+const router = useRouter();
 
-  methods: {
-    addForm() {
-      this.amountOfForm++;
-      this.$store.commit({
-        type: "addObj",
-        field: "experiences",
-        obj: {
+let validatedExperience = [];
+const amountOfForm = ref(1);
+const failedInput = ref(null);
+
+
+function addForm() {
+  amountOfForm.value++;
+  store.commit({
+    type: "addObj",
+    field: "experiences",
+    obj: {
+      position: null,
+      employer: null,
+      start_date: null,
+      due_date: null,
+      description: null,
+    },
+  });
+  getValidation(amountOfForm.value - 1, {
+    position: null,
+    employer: null,
+    start_date: null,
+    due_date: null,
+    description: null,
+  });
+}
+
+function getValidation(id, validatedExperienceObj) {
+  validatedExperience[id] = validatedExperienceObj;
+  localStorage.setItem(
+    "validatedExperience",
+    JSON.stringify(validatedExperience)
+  );
+}
+
+function back() {
+  router.replace({ path: "/PersonalInfo" });
+}
+
+function next() {
+  let next = true;
+  validatedExperience.forEach((expObj, id) => {
+    if (
+      Object.values(expObj).includes(true) ||
+      Object.values(expObj).includes(false) ||
+      id == 0
+    ) {
+      for (let i in expObj) {
+        if (expObj[i] != true) {
+          failedInput.value = document.getElementsByName(i)[id];
+          next = false;
+        }
+      }
+    }
+  });
+  if (next) {
+    router.replace({ path: "/education" });
+  }
+}
+
+onMounted(() => {
+  amountOfForm.value = store.state.mainData.experiences.length;
+
+  if (localStorage.validatedExperience) {
+    validatedExperience = JSON.parse(
+      localStorage.getItem("validatedExperience")
+    );
+  } else {
+    localStorage.setItem(
+      "validatedExperience",
+      JSON.stringify([
+        {
           position: null,
           employer: null,
           start_date: null,
           due_date: null,
           description: null,
         },
-      });
-      this.getValidation(this.amountOfForm - 1, {
-        position: null,
-        employer: null,
-        start_date: null,
-        due_date: null,
-        description: null,
-      });
-    },
-    getValidation(id, validatedExperienceObj) {
-      this.validatedExperience[id] = validatedExperienceObj;
-      localStorage.setItem(
-        "validatedExperience",
-        JSON.stringify(this.validatedExperience)
-      );
-    },
-    back() {
-      this.$router.replace({ path: "/PersonalInfo" });
-    },
-    next() {
-      let next = true;
-      this.validatedExperience.forEach((expObj, id) => {
-        if (
-          Object.values(expObj).includes(true) ||
-          Object.values(expObj).includes(false) ||
-          id == 0
-        ) {
-          for (let i in expObj) {
-            if (expObj[i] != true) {
-              this.failedInput = document.getElementsByName(i)[id];
-              next = false;
-            }
-          }
-        }
-      });
-      if (next) {
-        this.$router.replace({ path: "/education" });
-      }
-    },
-  },
-
-  mounted() {
-    this.amountOfForm = this.$store.state.mainData.experiences.length;
-
-    if (localStorage.validatedExperience) {
-      this.validatedExperience = JSON.parse(
-        localStorage.getItem("validatedExperience")
-      );
-    } else {
-      localStorage.setItem(
-        "validatedExperience",
-        JSON.stringify([
-          {
-            position: null,
-            employer: null,
-            start_date: null,
-            due_date: null,
-            description: null,
-          },
-        ])
-      );
-    }
-  },
-};
+      ])
+    );
+  }
+})
 </script>
 
 <style scoped>

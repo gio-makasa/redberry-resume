@@ -2,134 +2,108 @@
   <form :id="id">
     <div class="Input">
       <label for="position">თანამდებობა</label>
-      <input
-        type="text"
-        name="position"
-        placeholder="დეველოპერი, დიზაინერი, ა.შ."
-        v-model="$store.state.mainData.experiences[id - 1].position"
-        @input="Validation"
-      />
+      <input type="text" name="position" placeholder="დეველოპერი, დიზაინერი, ა.შ."
+        v-model="$store.state.mainData.experiences[id - 1].position" @input="Validation" />
       <span>მინიმუმ 2 სიმბოლო</span>
     </div>
 
     <div class="Input">
       <label for="employer">დამსაქმებელი</label>
-      <input
-        type="text"
-        name="employer"
-        placeholder="დამსაქმებელი"
-        v-model="$store.state.mainData.experiences[id - 1].employer"
-        @input="Validation"
-      />
+      <input type="text" name="employer" placeholder="დამსაქმებელი"
+        v-model="$store.state.mainData.experiences[id - 1].employer" @input="Validation" />
       <span>მინიმუმ 2 სიმბოლო</span>
     </div>
 
     <div id="dates">
       <div class="Input">
         <label for="start_date">დაწყების რიცხვი</label>
-        <input
-          type="date"
-          name="start_date"
-          v-model="$store.state.mainData.experiences[id - 1].start_date"
-          @input="Validation"
-        />
+        <input type="date" name="start_date" v-model="$store.state.mainData.experiences[id - 1].start_date"
+          @input="Validation" />
       </div>
       <div class="Input">
         <label for="due_date">დამთავრების რიცხვი</label>
-        <input
-          type="date"
-          name="due_date"
-          v-model="$store.state.mainData.experiences[id - 1].due_date"
-          @input="Validation"
-        />
+        <input type="date" name="due_date" v-model="$store.state.mainData.experiences[id - 1].due_date"
+          @input="Validation" />
       </div>
     </div>
 
     <div class="Input">
       <label for="description">აღწერა</label>
-      <textarea
-        name="description"
-        placeholder="როლი თანამდებობაზე და ზოგადი აღწერა"
-        v-model="$store.state.mainData.experiences[id - 1].description"
-        @input="Validation"
-      ></textarea>
+      <textarea name="description" placeholder="როლი თანამდებობაზე და ზოგადი აღწერა"
+        v-model="$store.state.mainData.experiences[id - 1].description" @input="Validation"></textarea>
     </div>
 
     <hr />
   </form>
 </template>
 
-<script>
-export default {
-  props: ["id", "failedInput"],
-  data() {
-    return {
-      validatedExperience: {
-        position: null,
-        employer: null,
-        start_date: null,
-        due_date: null,
-        description: null,
-      },
-    };
-  },
+<script setup>
+import { onUpdated, reactive } from 'vue';
+import { useStore } from 'vuex';
 
-  methods: {
-    Validation(event) {
-      let name = "";
-      if (event.target) {
-        event = event.target;
-        name = event.name;
+const store = useStore();
+const props = defineProps(["id", "failedInput"]);
+const emit = defineEmits(['validatedObj']);
+
+let validatedExperience = reactive({
+  position: null,
+  employer: null,
+  start_date: null,
+  due_date: null,
+  description: null,
+});
+
+function Validation(event) {
+  let name = "";
+  if (event.target) {
+    event = event.target;
+    name = event.name;
+  } else {
+    name = event.name;
+  }
+  switch (name) {
+    case "position":
+    case "employer":
+      if (event.value.length >= 2) {
+        event.previousSibling.classList.add("success");
+        event.previousSibling.classList.remove("failed");
+        validatedExperience[name] = true;
       } else {
-        name = event.name;
+        event.previousSibling.classList.add("failed");
+        event.previousSibling.classList.remove("success");
+        validatedExperience[name] = false;
+        if (event.value.length == 0) {
+          validatedExperience[name] = null;
+        }
       }
-      switch (name) {
-        case "position":
-        case "employer":
-          if (event.value.length >= 2) {
-            event.previousSibling.classList.add("success");
-            event.previousSibling.classList.remove("failed");
-            this.validatedExperience[name] = true;
-          } else {
-            event.previousSibling.classList.add("failed");
-            event.previousSibling.classList.remove("success");
-            this.validatedExperience[name] = false;
-            if (event.value.length == 0) {
-              this.validatedExperience[name] = null;
-            }
-          }
-          break;
-        default:
-          if (event.value.length == 0) {
-            this.validatedExperience[name] = null;
-            event.previousSibling.classList.add("failed");
-            event.previousSibling.classList.remove("success");
-          } else {
-            this.validatedExperience[name] = true;
-            event.previousSibling.classList.add("success");
-            event.previousSibling.classList.remove("failed");
-          }
-          break;
+      break;
+    default:
+      if (event.value.length == 0) {
+        validatedExperience[name] = null;
+        event.previousSibling.classList.add("failed");
+        event.previousSibling.classList.remove("success");
+      } else {
+        validatedExperience[name] = true;
+        event.previousSibling.classList.add("success");
+        event.previousSibling.classList.remove("failed");
       }
-      this.$store.commit("saveLS");
-      this.$emit("validatedObj", this.id - 1, this.validatedExperience);
-    },
-  },
+      break;
+  }
+  store.commit("saveLS");
+  emit("validatedObj", props.id - 1, validatedExperience);
+}
 
-  created() {
-    if (localStorage.validatedExperience) {
-      this.validatedExperience = JSON.parse(
-        localStorage.getItem("validatedExperience")
-      )[this.id - 1];
-    }
-  },
+if (localStorage.validatedExperience) {
+  validatedExperience = JSON.parse(
+    localStorage.getItem("validatedExperience")
+  )[props.id - 1];
+}
 
-  updated() {
-    if (this.failedInput) {
-      this.Validation(this.failedInput);
-    }
-  },
-};
+onUpdated(() => {
+  if (props.failedInput) {
+    Validation(props.failedInput);
+  }
+})
 </script>
 
 <style scoped>
@@ -187,8 +161,8 @@ hr {
   color: var(--offblack);
 }
 
-.success + textarea,
-.success + input {
+.success+textarea,
+.success+input {
   border-color: var(--successgreen);
 }
 
@@ -206,8 +180,8 @@ hr {
   color: var(--failedred);
 }
 
-.failed + textarea,
-.failed + input {
+.failed+textarea,
+.failed+input {
   border-color: var(--failedred);
 }
 

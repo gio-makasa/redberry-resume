@@ -1,22 +1,22 @@
 <template>
-    <div id="success">
+    <div ref="success">
         <span @click="remove">&#10005;</span>
-        <h3>რეზიუმე წარმატებით გაიგზავნა  🎉</h3>
+        <h3>რეზიუმე წარმატებით გაიგზავნა 🎉</h3>
     </div>
 </template>
 
-<script>
-export default {
-    methods:{
-        remove(){
-            document.getElementById('success').classList.add('hide');
-        }
-    }
+<script setup>
+import { ref } from 'vue';
+
+const success = ref(null);
+
+function remove() {
+    success.value.classList.add('hide');
 }
 </script>
 
 <style scoped>
-div{
+div {
     position: absolute;
     right: 3rem;
     top: 2rem;
@@ -28,7 +28,7 @@ div{
     box-shadow: 0 0 10px black;
 }
 
-span{
+span {
     position: relative;
     float: right;
     top: -1.5rem;
@@ -37,7 +37,7 @@ span{
     font-weight: bold;
 }
 
-.hide{
+.hide {
     display: none;
 }
 </style>

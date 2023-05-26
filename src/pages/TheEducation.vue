@@ -2,14 +2,8 @@
   <div id="education">
     <the-header page="3"></the-header>
     <main>
-      <EducationForm
-        v-for="i in amountOfForm"
-        :key="i"
-        :id="i"
-        :failedInput="failedInput"
-        @validatedObj="getValidation"
-        :degrees="degrees"
-      />
+      <EducationForm v-for="i in amountOfForm" :key="i" :id="i" :failedInput="failedInput" @validatedObj="getValidation"
+        :degrees="degrees" />
 
       <button @click="addForm" id="more">სხვა სასწავლებლის დამატება</button>
 
@@ -22,103 +16,104 @@
   <ResumeComponent :degrees="degrees" />
 </template>
 
-<script>
+<script setup>
+import { onMounted, ref, toRaw } from "vue";
+import { useRouter } from "vue-router";
+import { useStore } from "vuex";
 import EducationForm from "../components/EducationForm.vue";
 
-export default {
-  components: { EducationForm },
-  data() {
-    return {
-      validatedEducation: [],
-      amountOfForm: 1,
-      failedInput: null,
-      degrees: [],
-    };
-  },
-  methods: {
-    addForm() {
-      this.amountOfForm++;
-      this.$store.commit({
-        type: "addObj",
-        field: "educations",
-        obj: {
+const store = useStore();
+const router = useRouter();
+
+let validatedEducation = [];
+const amountOfForm = ref(1);
+const failedInput = ref(null);
+const degrees = ref([]);
+
+function addForm() {
+  amountOfForm.value++;
+  store.commit({
+    type: "addObj",
+    field: "educations",
+    obj: {
+      institute: null,
+      degree_id: null,
+      due_date: null,
+      description: null,
+    },
+  });
+  getValidation(amountOfForm.value - 1, {
+    institute: null,
+    degree_id: null,
+    due_date: null,
+    description: null,
+  });
+}
+
+function getValidation(id, validatedEducationObj) {
+  validatedEducation[id] = validatedEducationObj;
+  localStorage.setItem(
+    "validatedEducation",
+    JSON.stringify(validatedEducation)
+  );
+}
+
+function back() {
+  router.replace({ path: "/Experience" });
+}
+
+function next() {
+  let next = true;
+  validatedEducation.forEach((eduObj, id) => {
+    if (
+      Object.values(eduObj).includes(true) ||
+      Object.values(eduObj).includes(false) ||
+      id == 0
+    ) {
+      for (let i in eduObj) {
+        if (eduObj[i] != true) {
+          failedInput.value = document.getElementsByName(i)[id];
+          next = false;
+        }
+      }
+    }
+    if (next) {
+      router.replace({ path: "/Resume" });
+    }
+  });
+}
+
+fetch("https://redberry-resume-default-rtdb.firebaseio.com/degrees.json")
+  .then((response) => {
+    return response.json();
+  })
+  .then((data) => {
+    degrees.value = data;
+    // console.log(Object(degrees.value.target).keys)
+  });
+
+  
+onMounted(() => {
+  amountOfForm.value = store.state.mainData.educations.length;
+
+  if (localStorage.validatedEducation) {
+    validatedEducation = JSON.parse(
+      localStorage.getItem("validatedEducation")
+    );
+  } else {
+    localStorage.setItem(
+      "validatedEducation",
+      JSON.stringify([
+        {
           institute: null,
           degree_id: null,
           due_date: null,
           description: null,
         },
-      });
-      this.getValidation(this.amountOfForm - 1, {
-        institute: null,
-        degree_id: null,
-        due_date: null,
-        description: null,
-      });
-    },
-    getValidation(id, validatedEducationObj) {
-      this.validatedEducation[id] = validatedEducationObj;
-      localStorage.setItem(
-        "validatedEducation",
-        JSON.stringify(this.validatedEducation)
-      );
-    },
-    back() {
-      this.$router.replace({ path: "/Experience" });
-    },
-    next() {
-      let next = true;
-      this.validatedEducation.forEach((eduObj, id) => {
-        if (
-          Object.values(eduObj).includes(true) ||
-          Object.values(eduObj).includes(false) ||
-          id == 0
-        ) {
-          for (let i in eduObj) {
-            if (eduObj[i] != true) {
-              this.failedInput = document.getElementsByName(i)[id];
-              next = false;
-            }
-          }
-        }
-        if (next) {
-          this.$router.replace({ path: "/Resume" });
-        }
-      });
-    },
-  },
-
-  beforeCreate() {
-    fetch("https://resume.redberryinternship.ge/api/degrees")
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        this.degrees = data;
-      });
-  },
-
-  mounted() {
-    this.amountOfForm = this.$store.state.mainData.educations.length;
-
-    if (localStorage.validatedEducation) {
-      this.validatedEducation = JSON.parse(
-        localStorage.getItem("validatedEducation")
-      );
-    } else {
-      localStorage.setItem(
-        "validatedEducation",
-        JSON.stringify([
-          {
-            institute: null,
-            degree_id: null,
-            due_date: null,
-            description: null,
-          },
-        ])
-      );
-    }
-  },
-};
+      ])
+    );
+  }
+})
 </script>
 
 <style scoped>
